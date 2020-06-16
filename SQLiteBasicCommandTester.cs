@@ -8,7 +8,7 @@ namespace TestApp
     {
         public static void SQLiteTester()
         {
-            string connectionString = @"Data Source = E:\Learn\codebase\C#\bin\mdstatus.db";
+            string connectionString = @"Data Source = E:\Learn\codebase\C#\bin\mdstatus.db;PRAGMA journal_mode=WAL;";
             ReadFromSQliteDataBase(connectionString);
         }
 
