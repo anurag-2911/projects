@@ -8,6 +8,8 @@ namespace TestApp
     {
         public static void SQLiteTester()
         {
+            Uri uri = new Uri(@"\\svmzedc\shr_dat$\REF\PDF_XChange_Pro\_Install\7.0");
+
             string connectionString = @"Data Source = E:\Learn\codebase\C#\bin\mdstatus.db;PRAGMA journal_mode=WAL;";
             ReadFromSQliteDataBase(connectionString);
         }
