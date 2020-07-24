@@ -7,11 +7,21 @@ namespace TestApp
     public class SQLiteBasicCommandTester
     {
         public static void SQLiteTester()
-        {
-            Uri uri = new Uri(@"\\svmzedc\shr_dat$\REF\PDF_XChange_Pro\_Install\7.0");
-
+        {            
             string connectionString = @"Data Source = E:\Learn\codebase\C#\bin\mdstatus.db;PRAGMA journal_mode=WAL;";
-            ReadFromSQliteDataBase(connectionString);
+            SQLiteConnectionStringBuilder connectionStringBuilder = new SQLiteConnectionStringBuilder();
+            connectionStringBuilder.DataSource = @"E:\Learn\codebase\C#\bin\mdstatus.db";
+            connectionStringBuilder.JournalMode = SQLiteJournalModeEnum.Wal;
+            connectionString = connectionStringBuilder.ToString();
+            try
+            {
+                ReadFromSQliteDataBase(connectionString);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception.ToString());
+                
+            }
         }
 
         /// <summary>
@@ -20,8 +30,8 @@ namespace TestApp
         /// <param name="connectionString"></param>
         private static void ReadFromSQliteDataBase(string connectionString)
         {
-            string queryString =
-                "SELECT * from zstatus";
+            string queryString = "pragma journal_mode";
+                //"SELECT * from zstatus";
 
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
@@ -37,8 +47,8 @@ namespace TestApp
                             // Call Read before accessing data.
                             while (reader.Read())
                             {
-                                Console.WriteLine(String.Format("{0}, {1}",
-                                    reader[0], reader[1]));
+                                object value1 = reader.GetValue(0);
+                                Console.WriteLine(String.Format("{0}",value1));
                             }
 
                             // Call Close when done reading.

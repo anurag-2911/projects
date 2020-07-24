@@ -35,8 +35,9 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite">
-      <HintPath>D:\Work\GitHub\win-agent-core\client\lib\System.Data.SQLite\bin\System.Data.SQLite.DLL</HintPath>
+    <Reference Include="System.Data.SQLite, Version=1.0.56.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Work\GitHub\win-agent-spoke\client\lib\System.Data.SQLite\bin\System.Data.SQLite.DLL</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -48,7 +49,9 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegistryReader.cs" />
     <Compile Include="SQLiteBasicCommandTester.cs" />
+    <Compile Include="URITester.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
