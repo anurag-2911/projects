@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SQLite;
+using ExtensionMethods;
 
 namespace TestApp
 {
@@ -8,7 +9,7 @@ namespace TestApp
     {
         public static void SQLiteTester()
         {            
-            string connectionString = @"Data Source = E:\Learn\codebase\C#\bin\mdstatus.db;PRAGMA journal_mode=WAL;";
+            string connectionString = @"Data Source = E:\Learn\codebase\C#\bin\mdstatus.db;pragma journal_mode=wal;";
             SQLiteConnectionStringBuilder connectionStringBuilder = new SQLiteConnectionStringBuilder();
             connectionStringBuilder.DataSource = @"E:\Learn\codebase\C#\bin\mdstatus.db";
             connectionStringBuilder.JournalMode = SQLiteJournalModeEnum.Wal;
@@ -16,6 +17,7 @@ namespace TestApp
             try
             {
                 ReadFromSQliteDataBase(connectionString);
+                string path = Environment.CurrentDirectory;
             }
             catch (Exception exception)
             {
@@ -47,7 +49,8 @@ namespace TestApp
                             // Call Read before accessing data.
                             while (reader.Read())
                             {
-                                object value1 = reader.GetValue(0);
+                                
+                                object value1 = reader.GetValue(0,1);
                                 Console.WriteLine(String.Format("{0}",value1));
                             }
 
@@ -62,6 +65,29 @@ namespace TestApp
                     Console.WriteLine(exception.ToString());
                 }
             }
+        }
+    }
+}
+
+namespace ExtensionMethods
+{
+    public static class SQLiteDataReaderExtension
+    {
+        public static object GetValue(this SQLiteDataReader reader, int value,int value2)
+        {
+            object obj;
+
+            try
+            {
+                obj=reader.GetValue(value);
+            }
+            catch (Exception exception)
+            {
+                return null;
+                
+            }
+
+            return obj;
         }
     }
 }

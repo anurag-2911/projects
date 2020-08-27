@@ -4,9 +4,10 @@
     {
         static void Main(string[] args)
         {
-            SQLiteBasicCommandTester.SQLiteTester();
+            //SQLiteBasicCommandTester.SQLiteTester();
             //new URITester().TestURI();
             //RegistryReader.ReadRegistry();
+            LoopHoles.TestLoop();
         }
 
         
