@@ -7,7 +7,7 @@
             //SQLiteBasicCommandTester.SQLiteTester();
             //new URITester().TestURI();
             //RegistryReader.ReadRegistry();
-            LoopHoles.TestLoop();
+            //LoopHoles.TestLoop();
         }
 
         
