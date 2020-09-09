@@ -1,0 +1,45 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace TestApp
+{
+    class Reflector
+    {
+        public static void Reflect()
+        {
+            try
+            {
+                Assembly zmdAssembly = Assembly.LoadFrom(@"C:\Program Files (x86)\Novell\ZENworks\bin\zmd.dll");
+                Type[] types;
+                try
+                {
+                    types = zmdAssembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException reflectionTypeLoadException)
+                {
+                    types = reflectionTypeLoadException.Types;
+                }
+                foreach (var t in types.Where(t => t != null))
+                {
+                    // all types except which throws ReflectionTypeLoadException
+                }
+                // just to get ZenFile Type
+                Type Zenfile = zmdAssembly.GetType("Novell.Zenworks.ZenFile");
+                Type Session = zmdAssembly.GetType("Novell.Zenworks.Zmd.Session");
+                Type Progress = zmdAssembly.GetType("Novell.Zenworks.Zmd.Progress");
+                MethodInfo UploadFile = Zenfile.GetMethod("UploadFile", new[] { Session, typeof(string), typeof(string), Progress });
+
+            }
+            catch (Exception exception)
+            {
+                Trace.WriteLine(exception.ToString());
+
+            }
+        }
+    }
+}
