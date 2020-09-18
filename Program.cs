@@ -8,7 +8,8 @@
             //new URITester().TestURI();
             //RegistryReader.ReadRegistry();
             //LoopHoles.TestLoop();
-            SortParentChild.TestSort();
+            // SortParentChild.TestSort();
+            Reflector.Reflect();
         }
 
         
