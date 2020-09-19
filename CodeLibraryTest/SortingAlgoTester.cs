@@ -1,4 +1,5 @@
 ﻿using CodeLibrary;
+using Moq;
 using NUnit.Framework;
 using System;
 
@@ -26,7 +27,7 @@ namespace CodeLibraryTest
         }
 
         [Test]
-        public virtual void TestBubbleSort()
+        public virtual void TestBasicSortingAlgo()
         {
 
             // Arrange
@@ -85,6 +86,29 @@ namespace CodeLibraryTest
 
         }
 
+        [TestCase(new int[] { 23, 44, 6, 99, 1 })]
+        [TestCase(new int[] { 6, 98, 1, 22, 77 })]
+        [TestCase(new int[] { 99, 44, 66, 99, 11 })]
+        [TestCase(new int[] { 2, 44, 608, 9, 1 })]
+        public virtual void TestSortAlgo_ParameterizedInput(int[] array)
+        {
+            int[] unsortedArray = array;
+            sort = new BubbleSort();
+            sort.Sort(unsortedArray);
+            int[] copy = array;
+            Array.Sort(copy);
+
+            bool isEqual = true;
+            for (int i = 0; i < array.Length; i++)
+            {
+                if(unsortedArray[i]!=copy[i])
+                {
+                    isEqual = false;
+                    break;
+                }
+            }
+            Assert.AreEqual(true, isEqual);
+        }
         private static bool AreTwoArraysEqual(int[] array, int[] copyArray)
         {
             bool areEqual = true;
@@ -98,6 +122,18 @@ namespace CodeLibraryTest
             }
 
             return areEqual;
+        }
+
+        [Test]
+        public virtual void TestMock()
+        {
+            var session = new Mock<ISession>();
+            
+            session.Setup(x => x.sessionID).Returns("12345");
+            session.Setup(_ => _.IsUserSession()).Returns(true);
+
+            Assert.AreEqual(true,session.Object.IsUserSession());
+            session.Verify(x => x.IsUserSession(), Times.Once());
         }
     }
 }

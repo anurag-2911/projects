@@ -41,6 +41,9 @@
     <Reference Include="Moq, Version=4.14.0.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <HintPath>..\packages\Moq.4.14.5\lib\net45\Moq.dll</HintPath>
     </Reference>
+    <Reference Include="Novell.Zenworks.Tess">
+      <HintPath>D:\Work\GitHub\win-agent-core\client\lib\zen\Novell.Zenworks.Tess.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.core, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnitTestAdapter.WithFramework.2.0.0\lib\nunit.core.dll</HintPath>
       <Private>False</Private>
@@ -77,6 +80,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DailyScheduleTest.cs" />
     <Compile Include="SortingAlgoTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
