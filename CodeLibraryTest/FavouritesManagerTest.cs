@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using NUnit.Framework;
-using Novell.Zenworks.AppModule.Schema;
-using Novell.Zenworks.AppModule;
-using Novell.Zenworks.Zmd;
-using Moq;
+﻿using Moq;
 using Novell.Zenworks.AppModule.EndUser;
 using Novell.Zenworks.AppModule.src.EndUser.Favourite.Util;
 using Novell.Zenworks.AppModule.src.schema;
+using NUnit.Framework;
 
 namespace CodeLibraryTest
 {
