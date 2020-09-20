@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuildingController.cs" />
     <Compile Include="Mocks\ISession.cs" />
     <Compile Include="SortingAlgo\BubbleSort.cs" />
     <Compile Include="SortingAlgo\InsertionSort.cs" />
