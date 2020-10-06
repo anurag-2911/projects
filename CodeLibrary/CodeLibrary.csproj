@@ -33,6 +33,9 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.SQLite">
+      <HintPath>..\..\..\..\..\Work\GitHub\win-agent-spoke\client\lib\System.Data.SQLite\bin\System.Data.SQLite.DLL</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,6 +51,7 @@
     <Compile Include="SortingAlgo\MergeSort.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SortingAlgo\SortingAlgo.cs" />
+    <Compile Include="ZacRef.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
