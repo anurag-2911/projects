@@ -1,12 +1,12 @@
 ﻿using Microsoft.Win32;
-using Novell.Zenworks.Cache;
+
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data.SQLite;
+
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -18,156 +18,200 @@ namespace TestApp
         static string outputFile = Environment.CurrentDirectory + "\\" + "output.txt";
         static void Main(string[] args)
         {
-            ReadZenLoginLogs();
-           // TestMethods();
+            Zipper();
+            AddingTraceListener();
 
             Console.ReadKey();
 
         }
 
+        private static void Zipper()
+        {
+            string fileName = @"E:\Learn\codebase\angular\logapp\logs\app1.log" + ".zip";
+            
+            var zip = ZipFile.Open(fileName, ZipArchiveMode.Create);
+            
+            string file = @"E:\Learn\codebase\angular\logapp\logs\app1.log";
+            
+            zip.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.Optimal);
+           
+            zip.Dispose();
+        }
+
+        private static void AddingTraceListener()
+        {
+            // Create a file for output named TestFile.txt.
+            Stream myFile = File.Create("TestFile.txt");
+
+            /* Create a new text writer using the output stream, and add it to
+             * the trace listeners. */
+            TextWriterTraceListener myTextListener = new TextWriterTraceListener(myFile);
+            Trace.Listeners.Add(myTextListener);
+
+            // Write output to the file.
+            Trace.Write("Test output ");
+
+            // Flush the output.
+            Trace.Flush();
+        }
+
         private static void TestMethods()
         {
-            SQLiteLog.Enabled = true;
-            SQLiteConnection.Changed += SQLiteConnection_Changed;
-            SQLiteLog.Log += SQLiteLog_Log;
-
-            GetObjectEntry();
-            WalFileSize();
-            RunQuery();
             Refresh();
         }
 
         private static void ReadZenLoginLogs()
         {
-            string startText = @"[Processing Command for handler zen-login]";
-            string endText = @"[Finished Processing Command for handler zen-login.  Result = SUCCESS]";
-            string logFile = Environment.CurrentDirectory + "\\" + "zmd-messages.log";
-            IEnumerable<string> lines = GetLinesBetweenStartAndEndTexts(startText, endText, logFile);
-            StringBuilder stringBuilder = new StringBuilder();
-            string authTokenStartSearchText = @"ObtainAuthTokenFromServer entered";
-            string authTokenEndSearchText = @"ObtainAuthTokenFromServer returned with code";
-            string cacheStartText = @"GetObject(userResponse:Registration";
-            string cacheEndText = @"getcacheEntry exited for key userResponse:Registration";
-            DateTime startTimeCallingAuthToken =DateTime.Now;
-            DateTime endTimeCallingAuthToken=DateTime.Now;
-            DateTime cacheStartTime=DateTime.Now;
-            DateTime cacheEndTime=DateTime.Now;
-            string authTokenStart = string.Empty;
-            foreach (var item in lines)
-            {
-                if(item.Contains(authTokenStartSearchText) && string.IsNullOrEmpty(authTokenStart))
-                {
-                    authTokenStart = item;
-                    authTokenStart= authTokenStart.Split('[')[2];
-                    authTokenStart = authTokenStart.Split(']')[0];
-                    startTimeCallingAuthToken = DateTime.ParseExact(authTokenStart, "MM/dd/yyyy hh:mm:ss.fff", CultureInfo.InvariantCulture);    
-                }
-                if(item.Contains(authTokenEndSearchText))
-                {
-                    string authTokenEnd = item.Split('[')[2].Split(']')[0];
-                    endTimeCallingAuthToken = DateTime.ParseExact(authTokenEnd, "MM/dd/yyyy hh:mm:ss.fff", CultureInfo.InvariantCulture);
-
-
-                }
-                if(item.Contains(cacheStartText))
-                {
-                    string cacheStart = item.Split('[')[2].Split(']')[0];
-                    cacheStartTime = DateTime.ParseExact(cacheStart, "MM/dd/yyyy hh:mm:ss.fff", CultureInfo.InvariantCulture);
-                }
-                if(item.Contains(cacheEndText))
-                {
-                    string cacheEnd = item.Split('[')[2].Split(']')[0];
-                    cacheEndTime = DateTime.ParseExact(cacheEnd, "MM/dd/yyyy hh:mm:ss.fff", CultureInfo.InvariantCulture);
-                }
-                stringBuilder.AppendLine(item);
-            }
-            TimeSpan timeTakenByAuthToken = endTimeCallingAuthToken - startTimeCallingAuthToken;
-            Console.WriteLine("time taken by auth token in milliseconds: "+timeTakenByAuthToken.TotalMilliseconds);
-            TimeSpan timeTakenByCache = cacheEndTime - cacheStartTime;
-            Console.WriteLine("time taken by cache operation in milliseconds: "+timeTakenByCache.TotalMilliseconds);
-            //string result=string.Join("", lines);
-            WriteInOutPutFile(stringBuilder.ToString(), true);
-
-        }
-        private static IEnumerable<string> GetLinesBetweenStartAndEndTexts(string startString,string endString,string logFilePath)
-        {
-            IEnumerable<string> lines;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            lines=File.ReadLines(logFilePath).SkipWhile(line => !line.Contains(startString)).TakeWhile(line => !line.Contains(endString));
+            string directoryPath = @"D:\Work\Task\Bugs\Internal Bugs\pst-zencache\parsed-logs\DUT";
+            DirectoryInfo dir = new DirectoryInfo(directoryPath);
+            FileInfo[] files = dir.GetFiles("*.log");
+            Console.WriteLine("total files "+files.Length);
+            long timeTakenInzaccommand=0;
+            long timetakenInGettingAuthToken=0;
+            long timeTakenInGetCacheEntryOperation=0;
+
+            foreach (FileInfo file in files)
+            {
+                string filepath = file.FullName;
+                try
+                {
+                    string[] allLines = GetAllLines(filepath);
+                    ParseFile(allLines,ref timeTakenInzaccommand,ref timetakenInGettingAuthToken,ref timeTakenInGetCacheEntryOperation,filepath);
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine("exception in reading file "+ex.ToString());
+                }
+                
+
+            }
+            int percentauthtoken = (int)Math.Round((double)(100 * timetakenInGettingAuthToken) / timeTakenInzaccommand);
+            int percenagecacheop= (int)Math.Round((double)(100 * timeTakenInGetCacheEntryOperation) / timeTakenInzaccommand);
+            Console.WriteLine(string.Format("getauthtoken is {0} percent of total time and get cache has taken {1} percentage of total time",percentauthtoken,percenagecacheop));
+            Console.WriteLine("total files " + files.Length);
             stopwatch.Stop();
-            long timeTakentoReadLogFile = stopwatch.ElapsedMilliseconds;
-            Console.WriteLine("time taken to read zmd-message.log file "+timeTakentoReadLogFile);
+            Console.WriteLine("time taken by algo " +stopwatch.ElapsedMilliseconds);
+
+            //string result=string.Join("", lines);
+            //WriteInOutPutFile(stringBuilder.ToString(), true);
+
+        }
+
+        private static void ParseFile(string[] lines,ref long timeTakenInzaccommand,ref long timetakenInGettingAuthToken,ref long timeTakenInGetCacheEntryOperation,
+            string filepath)
+        {
+            string startText = @"[Processing Command for handler zen-login]";
+            string endText = @"[Finished Processing Command for handler zen-login.  Result = SUCCESS]";
+            
+            string authTokenStartSearchText = @"ObtainAuthToken entered";
+            string authTokenEndSearchText = @"ObtainAuthToken returned with code 0";
+            string cacheStartText = @"GetObject(userResponse:Registration";
+            string cacheEndText = @"getcacheEntry exited for key userResponse:Registration";
+            
+            DateTime startTimeCallingAuthToken = DateTime.Now;
+            DateTime endTimeCallingAuthToken = DateTime.Now;
+            DateTime cacheStartTime = DateTime.Now;
+            DateTime cacheEndTime = DateTime.Now;
+            
+            string authTokenStart = string.Empty;
+
+            Dictionary<string, string> timeTaken = new Dictionary<string, string>();
+            string dateTimeFormat = @"MM/dd/yyyy hh:mm:ss.fff";
+            int processid = 0;
+            int threadid = 0;
+            int allSearchTextFound = 0;
+            DateTime zenlgnStart = DateTime.Now;
+            DateTime zenlgnEnd = DateTime.Now;
+            foreach (var item in lines)
+            {
+                
+                if (item.Contains(startText))
+                {
+                    processid = Convert.ToInt32(item.Split('[')[3].Split(']')[0]);
+                    threadid = Convert.ToInt32(item.Split('[')[5].Split(']')[0]);
+                    string temp = item.Split('[')[2];
+                    allSearchTextFound++;
+                    zenlgnStart = DateTime.ParseExact(item.Split('[')[2].Split(']')[0], dateTimeFormat, CultureInfo.InvariantCulture);
+                }
+                if (item.Contains(authTokenStartSearchText) && string.IsNullOrEmpty(authTokenStart))
+                {
+                    if (Convert.ToInt32(item.Split('[')[3].Split(']')[0]) == processid && Convert.ToInt32(item.Split('[')[5].Split(']')[0]) == threadid)
+                    {
+                        startTimeCallingAuthToken = DateTime.ParseExact(item.Split('[')[2].Split(']')[0], dateTimeFormat, CultureInfo.InvariantCulture);
+                        allSearchTextFound++;
+                    }
+                }
+                if (item.Contains(authTokenEndSearchText))
+                {
+                    if (Convert.ToInt32(item.Split('[')[3].Split(']')[0]) == processid && Convert.ToInt32(item.Split('[')[5].Split(']')[0]) == threadid)
+                    {
+                        endTimeCallingAuthToken = DateTime.ParseExact(item.Split('[')[2].Split(']')[0], dateTimeFormat, CultureInfo.InvariantCulture);
+                        allSearchTextFound++;
+                    }
+
+                }
+                if (item.Contains(cacheStartText))
+                {
+                    if (Convert.ToInt32(item.Split('[')[3].Split(']')[0]) == processid && Convert.ToInt32(item.Split('[')[5].Split(']')[0]) == threadid)
+                    {
+                        cacheStartTime = DateTime.ParseExact(item.Split('[')[2].Split(']')[0], dateTimeFormat, CultureInfo.InvariantCulture);
+                        allSearchTextFound++;
+                    }
+                }
+                if (item.Contains(cacheEndText))
+                {
+                    if (Convert.ToInt32(item.Split('[')[3].Split(']')[0]) == processid && Convert.ToInt32(item.Split('[')[5].Split(']')[0]) == threadid)
+                    {
+                        allSearchTextFound++;
+                        cacheEndTime = DateTime.ParseExact(item.Split('[')[2].Split(']')[0], dateTimeFormat, CultureInfo.InvariantCulture);
+                    }
+                }
+                if (item.Contains(endText))
+                {
+                    authTokenStart = string.Empty;
+                    if (Convert.ToInt32(item.Split('[')[3].Split(']')[0]) == processid && Convert.ToInt32(item.Split('[')[5].Split(']')[0]) == threadid)
+                    {
+                        zenlgnEnd = DateTime.ParseExact(item.Split('[')[2].Split(']')[0], dateTimeFormat, CultureInfo.InvariantCulture);
+                        allSearchTextFound++;
+                    }
+                    processid = 0;
+                    threadid = 0;
+                    if(allSearchTextFound==6)
+                    {
+                        TimeSpan timeTakenByAuthToken = endTimeCallingAuthToken - startTimeCallingAuthToken;
+                        Console.WriteLine("time taken by auth token in milliseconds: " + timeTakenByAuthToken.TotalMilliseconds);
+                        TimeSpan timeTakenByCache = cacheEndTime - cacheStartTime;
+                        TimeSpan timeTakenByZaccommand = zenlgnEnd - zenlgnStart;
+                        timeTakenInzaccommand = timeTakenInzaccommand + (long)(timeTakenByZaccommand.TotalMilliseconds);
+                        timetakenInGettingAuthToken = timetakenInGettingAuthToken + (long)timeTakenByAuthToken.TotalMilliseconds;
+                        timeTakenInGetCacheEntryOperation = timeTakenInGetCacheEntryOperation + (long)timeTakenByCache.TotalMilliseconds;
+                        string message = string.Format("time taken by zac lgn :{0}, authtoken call : {1} , getcacheobject call :{2},zac lgn started at :{3},file name :{4}  ",
+                            (zenlgnEnd - zenlgnStart).TotalMilliseconds, timeTakenByAuthToken.TotalMilliseconds, timeTakenByCache.TotalMilliseconds, zenlgnStart,filepath);
+                        Console.WriteLine(message);
+                        WriteInOutPutFile(message, true);
+                        Console.WriteLine("time taken by cache operation in milliseconds: " + timeTakenByCache.TotalMilliseconds);
+                        allSearchTextFound = 0;
+                    }
+                    
+                   
+
+                }
+                
+            }
+
+        }
+
+        private static string[] GetAllLines(string logFilePath)
+        {
+            string[] lines;
+           
+            lines = File.ReadAllLines(logFilePath);
             
             return lines;
         }
-        private static void GetObjectEntry()
-        {
-            try
-            {
-
-                string connectionString = ConfigurationManager.ConnectionStrings["sqliteconnection"].ConnectionString;
-                using (SQLiteConnection sQLiteConnection = new SQLiteConnection(connectionString))
-                {
-                    sQLiteConnection.Open();
-                    SqliteEntryInfoProvider sqliteEntryInfoProvider = SqliteEntryInfoProvider.Instance;
-                    sqliteEntryInfoProvider.GetCacheEntry(sQLiteConnection, "userResponse:Registration", UserContext.PublicUser,typeof(ObjectCacheEntry));
-                    //sQLiteConnection.Open();
-                    //string queryJournalMode = "pragma journal_mode";
-                    //string querysyncMode = "pragma Synchronous";
-                    //using (SQLiteCommand sQLiteCommand = new SQLiteCommand(queryJournalMode, sQLiteConnection))
-                    //{
-                    //    object journalmode = sQLiteCommand.ExecuteScalar();
-                    //    sQLiteCommand.CommandText = querysyncMode;
-                    //    object syncmode = sQLiteCommand.ExecuteScalar();
-                        
-                    //}
-                }
-
-                
-            }
-            catch (SQLiteException sqe)
-            {
-                Console.WriteLine(sqe.ToString());                
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-        }
-
-        private static void SQLiteConnection_Changed(object sender, ConnectionEventArgs eventArgs)
-        {
-            try
-            {
-                string info = string.Empty;
-                object[] eventArgsData = eventArgs.Data as object[];
-                string data = string.Empty;
-                if (eventArgsData != null)
-                {
-                    data = string.Join("-", eventArgsData);
-                }
-                info = info + eventArgs.EventType.ToString() + "-" + eventArgs.Text + "-" + data;
-                WriteInOutPutFile(info);
-            }
-            catch (Exception)
-            {
-
-            }
-            
-        }
-
-        private static void SQLiteLog_Log(object sender, LogEventArgs e)
-        {
-            try
-            {
-                WriteInOutPutFile(string.Format("{0} - {1} - {2}", e.Data, e.ErrorCode, e.Message));
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-        }
+      
 
         private static string GetConnectionString()
         {
@@ -251,35 +295,6 @@ namespace TestApp
             Console.WriteLine("completed");
             WriteInOutPutFile(string.Format("average device refresh time : {0},user refresh time :{1}, total refresh time : {2}", dvcRefTime / count, usrRefTime / count, ttlRefTime / count));
             Console.WriteLine(string.Format("average device refresh time : {0},user refresh time :{1}, total refresh time : {2}", dvcRefTime / count, usrRefTime / count, ttlRefTime / count));
-        }
-
-        static void RunQuery()
-        {
-            string connectionString = GetConnectionString();
-                    
-            using (SQLiteConnection sQLiteConnection = new SQLiteConnection(connectionString))
-            {
-                try
-                {
-                    sQLiteConnection.Open();
-                   
-                    SQLiteCommand sQLiteCommand = new SQLiteCommand("pragma journal_mode", sQLiteConnection); 
-                    object journal_mode = sQLiteCommand.ExecuteScalar();
-
-                    SQLiteCommand syncMode = new SQLiteCommand("pragma Synchronous", sQLiteConnection);
-                    object sync_mode = syncMode.ExecuteScalar();
-                }
-
-                catch(SQLiteException sqliteException)
-                {
-                    Console.WriteLine(sqliteException.ToString());
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine(exception.ToString());
-                }
-            }
-        
         }
 
         private static void TriggerRefresh(ref string deviceRefreshTime, ref string userRefreshTime, ref string totalRefreshTime)
