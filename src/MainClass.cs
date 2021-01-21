@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -16,26 +15,212 @@ namespace TestApp
     class Program
     {
         static string outputFile = Environment.CurrentDirectory + "\\" + "output.txt";
+        static string s_signature = "ZNWK";
+        private static byte[] s_garbage = { 1, 85, 7, 105, 7, 9, 47, 9, 67, 9, 6, 73, 6, 3, 5, 164, 98, 6, 13, 0, 2 };
         static void Main(string[] args)
         {
-            Zipper();
-            AddingTraceListener();
-
-            Console.ReadKey();
+            string decrypt = DecryptString("ZNWK47784FADEF9C433F0747B1D2F9624A4D");         
+                       
+             Console.ReadKey();
 
         }
 
+       
+
+        private static string DecryptString(string encryptedString)
+        {
+            string result;
+
+            if (encryptedString.StartsWith(s_signature))
+            {
+                encryptedString = encryptedString.Substring(s_signature.Length);
+                byte[] dataBytes = HexStringToBytes(encryptedString);
+                obfuscate(s_garbage, dataBytes);
+                result = BytesToHexString(dataBytes);
+            }
+            else
+            {
+                result = encryptedString;
+            }
+
+            return result;
+        }
+
+        private static string BytesToHexString(byte[] bytes)
+        {
+            StringBuilder builder = new StringBuilder(2 * bytes.Length);
+
+            foreach (byte b in bytes)
+            {
+                builder.AppendFormat("{0:X2}", b);
+            }
+
+            return builder.ToString();
+        }
+        private static void obfuscate(byte[] pKey, byte[] dataBuffer)
+        {
+            byte keyIndex = 0;
+            int publicKeyLength = pKey.Length;
+
+            //
+            // Zip through the data stream encrypting or decrypting as we go
+            //
+            for (int i = 0; i < dataBuffer.Length; i++)
+            {
+
+                dataBuffer[i] = (byte)(dataBuffer[i] ^ pKey[keyIndex]);
+
+                //
+                // Check if the key index needs to be reset to the beginning of
+                // the key.
+                //
+                keyIndex++;
+                if (keyIndex >= publicKeyLength)
+                {
+                    // Reset the index back to the beginning for the next iteration.
+                    keyIndex = 0;
+                }
+
+            }
+        }
+
+
+        private static void CallMethod()
+        {
+            DeletenwAppUserData();
+
+            Base64Test();
+
+            LockOnNUll();
+
+            CallMethods();
+        }
+        private static byte[] HexStringToBytes(string hexString)
+        {
+            byte[] dataBytes = new byte[hexString.Length / 2];
+
+            for (int i = 0; i < dataBytes.Length; i++)
+            {
+                string byteHex = hexString.Substring(i * 2, 2);
+                dataBytes[i] = Byte.Parse(byteHex, System.Globalization.NumberStyles.AllowHexSpecifier);
+            }
+
+            return dataBytes;
+        }
+
+        private static void DeletenwAppUserData()
+        {
+            try
+            {
+                string userProfilePath=Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                if(!string.IsNullOrEmpty(userProfilePath))
+                {
+                    DirectoryInfo allUsers=Directory.GetParent(userProfilePath); 
+                    foreach (var user in allUsers.EnumerateDirectories())
+                    {
+                        string nwUserDatePath = string.Format("{0}\\{1}\\{2}\\{3}\\{4}", user.FullName, "AppData","Local","ZENworks", "User Data");
+                        if (Directory.Exists(nwUserDatePath))
+                        {
+                            try
+                            {
+                                Directory.Delete(nwUserDatePath, true);
+                            }
+                            catch (Exception ex)
+                            {
+
+
+                            }
+                        }
+                    }
+                }
+
+                
+                
+            }
+            catch (Exception ex)
+            {
+
+                
+            }
+
+        }
+
+        private static void Base64Test()
+        {
+            //string contents = File.ReadAllText(@"C:\1.csv");
+            //byte[] decodedDataAsBytes = System.Convert.FromBase64String(contents);
+            //string res;
+            //using (MemoryStream ms = new MemoryStream(decodedDataAsBytes))
+            //using (var decompress = new GZipStream(ms, CompressionMode.Decompress))
+            //using (var sr = new StreamReader(decompress))
+            //{
+            //    res = sr.ReadToEnd();
+            //}
+            //Console.WriteLine(res);
+
+        }
+
+        private static void LockOnNUll()
+        {
+            object obj = null;
+            try
+            {
+                lock (obj)
+                {
+                    Console.WriteLine("hello");
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+
+        private static void CallMethods()
+        {   
+            Zipper();
+            IsInBetwwen();
+            AddingTraceListener();
+        }
+
+        private static void IsInBetwwen()
+        {
+            int start = 1;
+            int end = 5;
+            int compare = 4;
+            bool res = IsTickBetween(start, end, compare);
+            bool res2 = IsTickBetween01(start, end, compare);
+        }
+
+        private static bool IsTickBetween(int start, int end, int comparand)
+        {
+            bool startlessThancompare = start <= comparand;
+            bool endlessThanCompare = end <= comparand; // if value is in between start and end this will be false
+            bool startlessThanEnd = start <= end; // if start is less than end then this is true
+            return startlessThancompare == endlessThanCompare != startlessThanEnd; // false != true only when comparand is between start and end
+            
+        }
+        private static bool IsTickBetween01(int start, int end, int comparand)
+        {
+            return start <= comparand == end <= comparand != start <= end;
+        }
         private static void Zipper()
         {
-            string fileName = @"E:\Learn\codebase\angular\logapp\logs\app1.log" + ".zip";
-            
-            var zip = ZipFile.Open(fileName, ZipArchiveMode.Create);
-            
-            string file = @"E:\Learn\codebase\angular\logapp\logs\app1.log";
-            
-            zip.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.Optimal);
-           
-            zip.Dispose();
+            string file = Environment.CurrentDirectory + "\\" + "zapp.kanurag1.log";
+            if (File.Exists(file))
+            {
+
+                string fileName = file + ".zip";
+
+                var zip = ZipFile.Open(fileName, ZipArchiveMode.Create);
+
+
+
+
+                zip.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.Optimal);
+
+                zip.Dispose();
+            }
         }
 
         private static void AddingTraceListener()
